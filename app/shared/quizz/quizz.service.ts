@@ -13,13 +13,13 @@ import { Quizz, QuizzResponses, QuizzResult, Photo, Question } from './quizz.mod
  * Utilise Http pour les accés HTTP en AJAX
  * Utilise Storage pour stocker les données
  */
-// TODO Rendre ce service Injectable
+@Injectable()
 export class QuizzService {
 
   /**
    * Méthode statique utilitaire pour le traitement des erreurs HTTP
    */
-  private static handleError(error: any) {
+  private handleError(error: any) {
     const errMsg = (error.message) ? error.message :
       error.status ? `${error.status} - ${error.statusText}` : 'Server error';
     console.error(errMsg); // log dans la console
@@ -38,15 +38,15 @@ export class QuizzService {
   }
 
   create(name: string): Observable<Quizz> {
-    const setCurrentQuizz = (quizz:Quizz) => {
+
+    return this.http.get('/api/quizz?userName=' + name)
+      .map(response => {
+        let quizz = response.json() as Quizz;
+        console.log(quizz);
         this.setQuizz(quizz);
-        this.setQuizzResponses(quizz.id, new QuizzResponses());
         return quizz;
-    };
-    // TODO utiliser le service Http pour faire le GET api/quizz?userName= pour créer le quizz
-    // TODO utiliser la fonction map des Observables et setCurrentQuizz
-    // TODO utiliser QuizzService.handleError pour traiter les éventuelles erreurs
-    return Observable.throw('A implémenter');
+      })
+      .catch(error => this.handleError(error));
   }
 
   getQuestionIndex(id: string): number {
@@ -63,10 +63,13 @@ export class QuizzService {
   }
 
   getPhoto(id: string, index: number): Observable<Photo> {
-    // TODO utiliser le service Http pour faire le GET api/quizz/id/index pour récupérer la photo
-    // TODO utiliser la fonction map pour retourner la photo
-    // TODO utiliser QuizzService.handleError pour traiter les éventuelles erreurs
-    return Observable.throw('A implémenter');
+    return this.http.get(`/api/quizz/${id}/${index}`)
+      .map(response => {
+        let photo = response.json() as Photo;
+        console.log('Photo ', photo);
+        return photo;
+      })
+      .catch(error => this.handleError(error));
   }
 
   addResponse(id: string, response: string): boolean {
