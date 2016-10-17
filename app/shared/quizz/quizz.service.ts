@@ -1,60 +1,110 @@
+
 import { Injectable } from '@angular/core';
+import { Http, Response } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/observable/of';
 
-import { Photo, Question } from './quizz.model';
+import { Quizz, QuizzResponses, QuizzResult, Photo, Question } from './quizz.model';
 
 /**
- * This class provides the Quizz service with methods to create and submit quizz.
+ * QuizzService.
+ * Utilise Http pour les accés HTTP en AJAX
+ * Utilise Storage pour stocker les données
  */
-@Injectable()
+// TODO Rendre ce service Injectable
 export class QuizzService {
 
-  quizzMap: Map<string, number>;
-  private data = ['Gorille', 'Chimpanzé', 'Orang-outang', 'Ouistiti'];
+  /**
+   * Méthode statique utilitaire pour le traitement des erreurs HTTP
+   */
+  private static handleError(error: any) {
+    const errMsg = (error.message) ? error.message :
+      error.status ? `${error.status} - ${error.statusText}` : 'Server error';
+    console.error(errMsg); // log dans la console
+    return Observable.throw(errMsg); // Lance une erreur
+  }
 
-  constructor() {
-    this.quizzMap = new Map<string, number>();
+  /**
+   * Créer un nouveau QuizzService avec les services Http et Storage injectés.
+   * @param {Http} http - Le service Http injecté.
+   * @param {Storage} storage - Le service Storage injecté.
+   * @constructor
+   */
+  constructor(
+    private http: Http,
+    private storage: Storage) {
+  }
+
+  create(name: string): Observable<Quizz> {
+    const setCurrentQuizz = (quizz:Quizz) => {
+        this.setQuizz(quizz);
+        this.setQuizzResponses(quizz.id, new QuizzResponses());
+        return quizz;
+    };
+    // TODO utiliser le service Http pour faire le GET api/quizz?userName= pour créer le quizz
+    // TODO utiliser la fonction map des Observables et setCurrentQuizz
+    // TODO utiliser QuizzService.handleError pour traiter les éventuelles erreurs
+    return Observable.throw('A implémenter');
   }
 
   getQuestionIndex(id: string): number {
-    console.log(`getQuestionIndex(${id})`);
-    return this.quizzMap.has(id) ? this.quizzMap.get(id) : 0;
+    const resp = this.getQuizzResponses(id);
+    return resp.responses.length;
   }
 
   getQuestion(id: string, index: number): Question {
-    console.log(`getQuestion(${id}, ${index})`);
-    this.shuffle();
-    var question: Question = { responses: this.data };
-    return question;
+    return this.getQuizz(id).questions[index];
+  }
+
+  getResult(id: string): QuizzResult {
+    return this.getQuizzResult(id);
   }
 
   getPhoto(id: string, index: number): Observable<Photo> {
-    console.log(`getPhoto(${id}, ${index})`);
-    const photo: Photo = {
-      url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Gorilla_gorilla_gorilla8.jpg/1024px-Gorilla_gorilla_gorilla8.jpg',
-      attribution: 'Par Raul654, license CC by-sa (https://creativecommons.org/licenses/by-sa/3.0/deed.fr)'
-    };
-    return Observable.of(photo);
+    // TODO utiliser le service Http pour faire le GET api/quizz/id/index pour récupérer la photo
+    // TODO utiliser la fonction map pour retourner la photo
+    // TODO utiliser QuizzService.handleError pour traiter les éventuelles erreurs
+    return Observable.throw('A implémenter');
   }
 
   addResponse(id: string, response: string): boolean {
-    console.log(`addResponse(${id}, ${response})`);
-    const idx = this.quizzMap.get(id) || 0;
-    this.quizzMap.set(id, idx + 1);
-    return true;
+    const resp = this.getQuizzResponses(id);
+    resp.responses.push(response);
+    this.setQuizzResponses(id, resp);
+    // continuer s'il y a pas d'autres questions
+    return resp.responses.length !== this.getQuizz(id).questions.length;
   }
 
-  private shuffle() {
-    for (let i = this.data.length - 1; i > 0; i--) {
-      let j = Math.floor(Math.random() * (i + 1));
-      const temp = this.data[i];
-      this.data[i] = this.data[j];
-      this.data[j] = temp;
-    }
-    return this.data;
+  sendResponses(id: string): Observable<QuizzResult> {
+    // TODO utiliser le service Http pour faire le POST api/quizz/id pour envoyer les réponses
+    // TODO utiliser la fonction map pour retourner le résultat, il faut aussi enregistrer le résultat avec setQuizzResult
+    // TODO utiliser QuizzService.handleError pour traiter les éventuelles erreurs
+    return Observable.throw('A implémenter');
+  }
+
+  private getQuizz(id: string): Quizz {
+    return JSON.parse(this.storage.getItem(`quizz-${id}`)) as Quizz;
+  }
+
+  private setQuizz(quizz: Quizz) {
+    this.storage.setItem(`quizz-${quizz.id}`, JSON.stringify(quizz));
+  }
+
+  private getQuizzResponses(id: string): QuizzResponses {
+    return JSON.parse(this.storage.getItem(`responses-${id}`)) as QuizzResponses;
+  }
+
+  private setQuizzResponses(id: string, quizzResponses: QuizzResponses) {
+    this.storage.setItem(`responses-${id}`, JSON.stringify(quizzResponses));
+  }
+  private getQuizzResult(id: string): QuizzResult {
+    return JSON.parse(this.storage.getItem(`result-${id}`)) as QuizzResult;
+  }
+
+  private setQuizzResult(id: string, quizzResult: QuizzResult) {
+    this.storage.setItem(`result-${id}`, JSON.stringify(quizzResult));
   }
 }
 
