@@ -1,21 +1,20 @@
-<form> <!-- Binding de la soumission du formulaire -->
-  <div class="photo"> <!-- Afficher quand la photo est chargé -->
+<form (ngSubmit)="next()">
+  <div class="photo" *ngIf="photo">
     <figure>
-      <img src="" alt=""> <!-- Binding des proprités de l'image -->
-      <figcaption><!-- Ajouter l'attribution de la photo --></figcaption>
+      <img src="{{ photo.url }}" alt="photo du singe">
+      <figcaption>{{ photo.attribution }}</figcaption>
     </figure>
   </div>
   <div class="question">
     <h2>Quel est ce singe ?</h2>
     <div class="answers">
       <ul>
-        <li> <!-- iteration sur les réponse possible -->
-          <input type="radio" name="answer"> <!-- binding du radio boutton -->
-          <label><!-- Label associé au radio boutton --></label>
+        <li *ngFor="let r of question.responses">
+          <label><input type="radio" name="answer" [(ngModel)]="response" value="{{ r }}">{{ r }}</label>
         </li>
       </ul>
     </div>
-    <button type="submit">Valider</button> <!-- Binding de l'état disabled -->
+    <button type="submit" [disabled]="!response">Valider</button>
   </div>
 </form>
 
