@@ -24,8 +24,14 @@
   </div>
 </form>
 
-<pre *ngIf="result">{{ result | json }}</pre>
+<div class="result" *ngIf="result">
+  <h2>Congrats {{ result.userName }}!</h2>
+
+  <p>Your score is <strong>{{ result.score }}</strong> (out of 5, hardcoded dur to bad API, anyway...)</p>
+
+  <p>It took you <strong>{{ result.duration }}</strong> seconds to finish this quizz</p>
+</div>
 
 <!--<pre>{{question|json}}</pre>-->
 <!--<pre>{{photo|json}}</pre>-->
-<pre>{{response}}</pre>
+<!--<pre>{{response}}</pre>-->

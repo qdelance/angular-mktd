@@ -1,6 +1,6 @@
 
 import { Injectable } from '@angular/core';
-import { Http, Response } from '@angular/http';
+import { Http, Response, Headers, RequestOptions } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
@@ -84,6 +84,21 @@ export class QuizzService {
   }
 
   sendResponses(id: string): Observable<QuizzResult> {
+
+    let body = JSON.stringify(this.getQuizzResponses(id));
+    let headers = new Headers({ 'Content-Type': 'application/json' });
+    let options = new RequestOptions({ headers: headers });
+
+
+    return this.http.post('/api/quizz/' + id, body, options)
+      .map(response => {
+        let result = response.json() as QuizzResult;
+        console.log(result);
+        // Store anwser propals received from server
+        this.setQuizzResult(id, result);
+        return result;
+      })
+      .catch(error => this.handleError(error));
     // TODO utiliser le service Http pour faire le POST api/quizz/id pour envoyer les réponses
     // TODO utiliser la fonction map pour retourner le résultat, il faut aussi enregistrer le résultat avec setQuizzResult
     // TODO utiliser QuizzService.handleError pour traiter les éventuelles erreurs
