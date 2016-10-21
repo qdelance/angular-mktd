@@ -43,7 +43,10 @@ export class QuizzService {
       .map(response => {
         let quizz = response.json() as Quizz;
         console.log(quizz);
+        // Store anwser propals received from server
         this.setQuizz(quizz);
+        // Store new structure for upcoming answers
+        this.setQuizzResponses(quizz.id, new QuizzResponses());
         return quizz;
       })
       .catch(error => this.handleError(error));

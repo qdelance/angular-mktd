@@ -9,11 +9,24 @@ import { QuizzService, QuizzResult, Photo, Question } from '../../shared/index';
 })
 export class QuestionComponent implements OnInit {
 
-  photo: Photo;
-  response: string = null;
-  question: Question;
-  result: QuizzResult;
+  // step of the quizz, current question index
   index: number;
+
+  // photo for the current question
+  photo: Photo;
+
+  // list of possible answers for current step
+  question: Question;
+
+  // bound to input (id of the answer of question for the current index)
+  response: string = null;
+
+  // initialized once all questions have been answered
+  result: QuizzResult;
+
+  // UUID of the quizz
+  // set by API in initial call to get questions
+  // reused in next calls to API to submit results or get photos
   private quizzId: string;
 
   /**
@@ -44,12 +57,16 @@ export class QuestionComponent implements OnInit {
    * @return {boolean} - false pour éviter le comportement par défaut du submit d'un formulaire HTML.
    */
   next(): boolean {
+    console.log('next');
     const hasNext = this.quizzService.addResponse(this.quizzId, this.response);
     if (hasNext) {
+      console.log(`get question for index #${this.index}`);
       const next = this.quizzService.getQuestionIndex(this.quizzId);
       this.index = next;
+      console.log(`again get question for index #${this.index}`);
       this.load();
     } else {
+      console.log('no more question, posting result');
       // On est dans une version 'dégradé' de l'application, on affiche le résultat dans la console
       this.quizzService.sendResponses(this.quizzId)
         .subscribe(result => {
@@ -61,6 +78,7 @@ export class QuestionComponent implements OnInit {
   }
 
   private load() {
+    console.log(`load question for index #${this.index}`);
     // Charge la photo
     this.quizzService.getPhoto(this.quizzId, this.index)
       .subscribe(photo => this.photo = photo);
